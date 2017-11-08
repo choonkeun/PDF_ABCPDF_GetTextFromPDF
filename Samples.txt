@@ -1,0 +1,25 @@
+string theSrc = Server.MapPath("Acrobat.pdf");
+string theDst = Server.MapPath("HighlightedText.pdf");
+string searchString = "Acrobat";
+using (Doc theDoc = new Doc()) {
+  theDoc.Read(theSrc);
+  TextOperation op = new TextOperation(theDoc);
+  op.PageContents.AddPages();
+  string text = op.GetText();
+  int pos = 0;
+  while (true) {
+    pos = text.IndexOf(searchString, pos, StringComparison.CurrentCultureIgnoreCase);
+    if (pos < 0)
+      break;
+    IList<TextFragment> theSelection = op.Select(pos, searchString.Length);
+    IList<TextGroup> theGroups = op.Group(theSelection);
+    foreach (TextGroup theGroup in theGroups) {
+      theDoc.Rect.String = theGroup.Rect.String;
+      theDoc.FrameRect();
+    }
+    pos += searchString.Length;
+  }
+  theDoc.Save(theDst);
+}
+
+
